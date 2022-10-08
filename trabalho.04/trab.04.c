@@ -1,0 +1,60 @@
+#include <stdio.h>
+
+int main(void) {
+  int dimensoes[1][4]; //cria matriz para ler as dimensoes
+  int a, b;
+  for(a = 0; a < 1; a++){
+    for(b = 0; b < 4; b++){
+      scanf(" %d", &dimensoes[a][b]); //ler as dimensoes da matriz principal
+    }
+  }
+  
+  int n, m, r, s;
+  n = dimensoes[0][0]; //linhas matriz principal
+  m = dimensoes[0][1]; //colunas matriz principal
+  r = dimensoes[0][2]; //linhas matriz de soma
+  s = dimensoes[0][3]; //colunas matriz de soma
+  int matriz[n][m]; //cria a matriz principal
+  for(a = 0; a < n; a++){
+    for(b = 0; b < m; b++){
+      scanf(" %d", &matriz[a][b]); //ler a matriz principal
+    }
+  }
+
+  int c, d, max, soma1, soma2, x, v;
+  max = 0;
+  soma1 = 0;
+  soma2 = 0;
+  x = 0;
+  v = 0;
+  for(x = 0; x <= n - r; x++){ //rodar toda a matriz
+    v = 0;
+    for(a = x; a < r + x; a++){ //achar a primeira matriz que se encaixa com r x s, da coluna
+      for(b = 0; b < s; b++){
+        soma2 = 0;
+        soma1 = soma1 + matriz[a][b];
+        v++;
+        if(v == r * s){
+          soma2 = soma1;
+          if(soma1 > max){
+            max = soma1;
+          }
+          soma1 = 0;
+          for(d = 0; d < m - s; d++){ //ver o valor da soma dos numeros das matrizes ao longo da linha
+            for(c = 0; c < r; c++){
+              soma2 = soma2 + matriz[c + x][d + s];
+              soma2 = soma2 - matriz[c + x][d];  
+              if((soma2 > max) && (c == r - 1)){ //caso o numero for maior e a matriz se encaixe no r x s, ocorre a troca
+                max = soma2;
+              }            
+            }
+          }          
+        }
+      }
+    }
+  } 
+
+  printf("%d\n", max); //imprimir a soma mais alta
+
+  return 0;
+}

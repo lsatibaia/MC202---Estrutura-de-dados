@@ -1,0 +1,138 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
+int main(void) {
+  char senhas[200][21];
+  int a, n, x, b, c;
+  n = 0;
+  b = 0;
+  c = 0;
+  for(a = 0; a < 200; a++){
+    scanf(" %[^\n]", senhas[a]); //le as entradas ate a palavra fim
+    n = a - 1;
+    if((senhas[a][0] == 'f') && (senhas[a][1] == 'i') && (senhas[a][2] == 'm') && (senhas[a][3] == '\0')){    
+      break;
+    }
+  }
+  int resultado[n + 1]; //cria o vetor onde fica o resultado se a senha esta se encaixando nas exigencias
+  for(a = 0; a <= n; a++){
+    resultado[a] = 1;
+  }
+
+  x = 0;
+  int caracteres[n + 1];
+  for(a = 0; a <= n; a++){ //confere se tem pelo menos 8 caracteres
+    x = strlen(senhas[a]);
+    caracteres[a] = x;
+    if(x < 8){
+      resultado[a] = 0;
+    }
+  }
+
+  for(a = 0; a <= n; a++){ //confere se a senha tem pelo menos uma vogal
+    if(resultado[a] == 1){
+      for(b = 0; b < caracteres[a]; b++){
+        if((senhas[a][b] == 'a')||(senhas[a][b] == 'e')||(senhas[a][b] == 'i')||(senhas[a][b] == 'o')||(senhas[a][b] == 'u')||(senhas[a][b] == 'A')||(senhas[a][b] == 'E')||(senhas[a][b] == 'I')||(senhas[a][b] == 'O')||(senhas[a][b] == 'U')){
+          resultado[a] = 1;
+          break;
+        }
+        else{
+          resultado[a] = 0;
+        }       
+      }
+    }
+  }
+  
+  for(a = 0; a <= n; a++){ //confere se a senha tem pelo menos um numero
+    if(resultado[a] == 1){
+      for(b = 0; b < caracteres[a]; b++){
+        if((senhas[a][b] == '1')||(senhas[a][b] == '2')||(senhas[a][b] == '3')||(senhas[a][b] == '4')||(senhas[a][b] == '5')||(senhas[a][b] == '6')||(senhas[a][b] == '7')||(senhas[a][b] == '8')||(senhas[a][b] == '9')||(senhas[a][b] == '0')){
+          resultado[a] = 1;
+          break;
+        }
+        else{
+          resultado[a] = 0;
+        }       
+      }
+    }
+  }
+
+  int mm[n + 1];
+  for(a = 0; a <= n; a++){
+    mm[a] = 0;
+  }
+  for(a = 0; a <= n; a++){ //confere se a senha tem pelo menos uma letra em maiusculo e uma em minusculo
+    if(resultado[a] == 1){
+      for(b = 0; b < caracteres[a]; b++){
+        if((senhas[a][b] == 'A')||(senhas[a][b] == 'B')||(senhas[a][b] == 'C')||(senhas[a][b] == 'D')||(senhas[a][b] == 'E')||(senhas[a][b] == 'F')||(senhas[a][b] == 'G')||(senhas[a][b] == 'H')||(senhas[a][b] == 'I')||(senhas[a][b] == 'J')||(senhas[a][b] == 'K')||(senhas[a][b] == 'L')||(senhas[a][b] == 'M')||(senhas[a][b] == 'N')||(senhas[a][b] == 'O')||(senhas[a][b] == 'P')||(senhas[a][b] == 'Q')||(senhas[a][b] == 'R')||(senhas[a][b] == 'S')||(senhas[a][b] == 'T')||(senhas[a][b] == 'U')||(senhas[a][b] == 'V')||(senhas[a][b] == 'W')||(senhas[a][b] == 'X')||(senhas[a][b] == 'Y')||(senhas[a][b] == 'Z')){
+          for(c = 0; c < caracteres[a]; c++){
+            if((senhas[a][c] == 'a')||(senhas[a][c] == 'b')||(senhas[a][c] == 'c')||(senhas[a][c] == 'd')||(senhas[a][c] == 'e')||(senhas[a][c] == 'f')||(senhas[a][c] == 'g')||(senhas[a][c] == 'h')||(senhas[a][c] == 'i')||(senhas[a][c] == 'j')||(senhas[a][c] == 'k')||(senhas[a][c] == 'l')||(senhas[a][c] == 'm')||(senhas[a][c] == 'n')||(senhas[a][c] == 'o')||(senhas[a][c] == 'p')||(senhas[a][c] == 'q')||(senhas[a][c] == 'r')||(senhas[a][c] == 's')||(senhas[a][c] == 't')||(senhas[a][c] == 'u')||(senhas[a][c] == 'v')||(senhas[a][c] == 'w')||(senhas[a][c] == 'x')||(senhas[a][c] == 'y')||(senhas[a][c] == 'z')){
+              mm[a]++;
+              break;
+            }
+          }
+        }       
+      }
+    }
+  }
+  for(a = 0; a <= n; a++){
+    if(mm[a] >= 1){
+      resultado[a] = 1;
+    }
+    else{
+      resultado[a] = 0;
+    }
+  }
+
+  for(a = 0; a <= n; a++){ //confere se nao ha mais de duas vogais juntas, caso haja a senha e' invalida
+    if(resultado[a] == 1){
+      for(b = 0; b < caracteres[a] - 2; b++){
+        if((senhas[a][b] == 'a')||(senhas[a][b] == 'e')||(senhas[a][b] == 'i')||(senhas[a][b] == 'o')||(senhas[a][b] == 'u')||(senhas[a][b] == 'A')||(senhas[a][b] == 'E')||(senhas[a][b] == 'I')||(senhas[a][b] == 'O')||(senhas[a][b] == 'U')){
+          if((senhas[a][b + 1] == 'a')||(senhas[a][b + 1] == 'e')||(senhas[a][b + 1] == 'i')||(senhas[a][b + 1] == 'o')||(senhas[a][b + 1] == 'u')||(senhas[a][b + 1] == 'A')||(senhas[a][b + 1] == 'E')||(senhas[a][b + 1] == 'I')||(senhas[a][b + 1] == 'O')||(senhas[a][b + 1] == 'U')){
+            if((senhas[a][b + 2] == 'a')||(senhas[a][b + 2] == 'e')||(senhas[a][b + 2] == 'i')||(senhas[a][b + 2] == 'o')||(senhas[a][b + 2] == 'u')||(senhas[a][b + 2] == 'A')||(senhas[a][b + 2] == 'E')||(senhas[a][b + 2] == 'I')||(senhas[a][b + 2] == 'O')||(senhas[a][b + 2] == 'U')){
+              resultado[a] = 0;
+              break;              
+            }
+          }                    
+        }
+        else{
+          resultado[a] = 1;
+        }       
+      }
+    }
+  }
+
+  for(a = 0; a <= n; a++){ //confere se ha 3 consoantes juntas, pelo menos 3
+    if(resultado[a] == 1){
+      for(b = 0; b < caracteres[a] - 2; b++){
+        if((senhas[a][b] != 'a') && (senhas[a][b] != 'e') && (senhas[a][b] != 'i') && (senhas[a][b] != 'o') && (senhas[a][b] != 'u') && (senhas[a][b] != 'A') && (senhas[a][b] != 'E') && (senhas[a][b] != 'I') && (senhas[a][b] != 'O') && (senhas[a][b] != 'U') && (senhas[a][b] != '0') && (senhas[a][b] != '1') && (senhas[a][b] != '2') && (senhas[a][b] != '3') && (senhas[a][b] != '4') && (senhas[a][b] != '5') && (senhas[a][b] != '6') && (senhas[a][b] != '7') && (senhas[a][b] != '8') && (senhas[a][b] != '9')){
+          if((senhas[a][b + 1] != 'a') && (senhas[a][b + 1] != 'e') && (senhas[a][b + 1] != 'i') && (senhas[a][b + 1] != 'o') && (senhas[a][b + 1] != 'u') && (senhas[a][b + 1] != 'A') && (senhas[a][b + 1] != 'E') && (senhas[a][b + 1] != 'I') && (senhas[a][b + 1] != 'O') && (senhas[a][b + 1] != 'U') && (senhas[a][b + 1] != '0') && (senhas[a][b + 1] != '1') && (senhas[a][b + 1] != '2') && (senhas[a][b + 1] != '3') && (senhas[a][b + 1] != '4') && (senhas[a][b + 1] != '5') && (senhas[a][b + 1] != '6') && (senhas[a][b + 1] != '7') && (senhas[a][b + 1] != '8') && (senhas[a][b + 1] != '9')){
+            if((senhas[a][b + 2] != 'a') && (senhas[a][b + 2] != 'e') && (senhas[a][b + 2] != 'i') && (senhas[a][b + 2] != 'o') && (senhas[a][b + 2] != 'u') && (senhas[a][b + 2] != 'A') && (senhas[a][b + 2] != 'E') && (senhas[a][b + 2] != 'I') && (senhas[a][b + 2] != 'O') && (senhas[a][b + 2] != 'U') && (senhas[a][b + 2] != '0') && (senhas[a][b + 2] != '1') && (senhas[a][b + 2] != '2') && (senhas[a][b + 2] != '3') && (senhas[a][b + 2] != '4') && (senhas[a][b + 2] != '5') && (senhas[a][b + 2] != '6') && (senhas[a][b + 2] != '7') && (senhas[a][b + 2] != '8') && (senhas[a][b + 2] != '9')){
+              resultado[a] = 1;
+              break;              
+            }
+          }                    
+        }
+        else{
+          resultado[a] = 0;
+        }       
+      }
+    }
+  }
+
+  for(a = 0; a <= n; a++){
+    printf("[");
+    for(b = 0; b < caracteres[a]; b++){
+      printf("%c", senhas[a][b]);
+      if((b == caracteres[a] - 1) && (resultado[a] == 0)){
+        printf("] e' inaceitavel.\n");
+      }
+      if((b == caracteres[a] - 1) && (resultado[a] == 1)){
+        printf("] e' aceitavel.\n");
+      }
+    }
+  }
+  
+  return 0;
+}

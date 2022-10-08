@@ -1,0 +1,565 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <errno.h>
+#include <string.h>
+
+struct node{
+  int chave;
+  int nivel;
+  struct node* esquerda;
+  struct node* direita;
+  struct node* pai;
+};
+
+typedef struct node node;
+
+struct tree{
+  struct node* ultimo;
+  struct node* raiz;
+};
+
+typedef struct tree tree;
+
+
+
+// funcao que insere um novo numero na arvore seguindo a regra do menor pra esquerda e maior para a direita
+int arvore_insert(tree* T, int data){
+  node* novo = calloc(1, sizeof(node));
+  
+  if(novo == NULL){
+    printf("memoria insuficiente\n");
+    return 0;
+  }
+
+  if(!novo)
+    return 0;
+
+  novo->chave = data;
+
+  if(T->raiz == NULL){
+    novo->nivel = 0;
+    T->raiz = novo;
+    return 1;
+  }
+
+  node* p = T->raiz;
+  node* pp = NULL;
+
+  while(p != NULL){
+    pp = p;
+    if(p->chave > data)
+      p = p->esquerda;
+    else
+      p = p->direita;
+  }
+
+  novo->nivel = pp->nivel + 1;
+  
+  if(pp->chave > data){
+    pp->esquerda = novo;
+    pp->esquerda->pai = pp; 
+  }
+  else{
+    pp->direita = novo;
+    pp->direita->pai = pp;
+  }
+
+  p = T->raiz;
+  T->raiz = p;
+
+    
+  return 1;
+}
+
+
+
+// funcao de busca: caso tenha o numero pesquisado na arvore, a funcao retorna 1, caso nao tenha retorna 0
+node* arvore_busca(tree* T, int nbusca){
+  if(T->raiz == NULL){
+    return NULL;
+  }
+
+  node* p = T->raiz;
+  while(p != NULL){
+    if(p->chave == nbusca)
+      return p;
+    else if(p->chave > nbusca){
+      p = p->esquerda;
+    }
+    else if (p->chave < nbusca){
+      p = p->direita;
+    }
+  }
+  return p;
+}
+
+
+
+// limpa a arvore 
+void arvore_free_nodes(node* p){
+  if(p == NULL)
+    return;
+
+  arvore_free_nodes(p->esquerda);
+  arvore_free_nodes(p->direita);
+  free(p);
+
+  return;
+}
+void arvore_free(tree* T){
+  T->raiz = NULL;
+  T->ultimo = NULL;
+  T = NULL;
+}
+
+
+
+//pre-ordem
+void pre_ordem(node* p){  
+  if(p != NULL){
+    printf("%d ", p->chave);
+    pre_ordem(p->esquerda);
+    pre_ordem(p->direita);
+  }
+}
+
+
+
+//em-ordem
+void em_ordem(node*p){
+  if(p != NULL){
+    em_ordem(p->esquerda);
+    printf("%d ", p->chave);
+    em_ordem(p->direita);
+  }
+}
+
+
+
+//pos-ordem
+void pos_ordem(node*p){
+  if(p != NULL){
+    pos_ordem(p->esquerda);
+    pos_ordem(p->direita);
+    printf("%d ", p->chave);
+  }
+}
+
+
+
+// funcao que devolve o sucessor de um numero inserido
+node* arvore_sucessor(tree* T, int n){  
+  node* u = T->raiz;
+  node* uu = NULL;
+  u = arvore_busca(T, n);
+  if(u == NULL)
+    return NULL;
+
+  if(u->direita != NULL){
+    u = u->direita;
+    while(u->esquerda != NULL){
+      u = u->esquerda;      
+    }  
+    return u;
+  }
+
+  uu = u->pai;
+  while((uu != NULL) && (u == uu->direita)){
+    u = uu;
+    uu = uu->pai;
+  }
+  
+  return uu;
+}
+
+
+
+// funcao que devolve o predecessor de um numero inserido
+node* arvore_predecessor(tree* T, int n){
+  node* u = T->raiz;
+  node* uu = NULL;
+  u = arvore_busca(T, n);
+  if(u == NULL)
+    return NULL;
+
+  
+  if(u->esquerda != NULL){
+    u = u->esquerda;
+    while(u->direita != NULL){
+      u = u->direita;
+    }
+    return u;
+  }
+  
+  uu = u->pai;
+  while((uu != NULL) && (u == uu->esquerda)){
+    u = uu;
+    uu = uu->pai;
+  }  
+  return uu;
+}
+
+
+
+// remove um certo numero inserido da arvore em questao
+int remove_x(tree* T, int n){
+  node* p = T->raiz;
+  p = arvore_busca(T, n);
+  if(p == NULL){
+    return 0;
+  }
+  node* y = NULL;
+  int x = 0;
+
+  if(p->chave == T->raiz->chave){
+    if((p->direita == NULL) && (p->esquerda == NULL)){
+      T->raiz = NULL;
+      free(p);
+      return 1;
+    }
+    else if((p->direita == NULL) && (p->esquerda != NULL)){
+      T->raiz = p->esquerda;
+      T->raiz->pai = NULL;
+      free(p);
+      return 1;
+    }
+    else if((p->direita != NULL) && (p->esquerda == NULL)){
+      T->raiz = p->direita;
+      T->raiz->pai = NULL;
+      free(p);
+      return 1;
+    }
+    else if((p->direita != NULL) && (p->esquerda != NULL)){
+      y = arvore_sucessor(T, n);
+      x = y->chave;
+      remove_x(T, x);
+      T->raiz->chave = x;
+      return 1;
+      
+    }
+  }
+  else
+    if((p->direita == NULL) && (p->esquerda == NULL)){
+      if(p->pai->direita == p){
+        p->pai->direita = NULL;
+        free(p);
+      }
+      else{
+        p->pai->esquerda = NULL;
+        free(p);
+      }
+      return 1;
+    }
+    else if((p->direita == NULL) && (p->esquerda != NULL)){
+      if(p->pai->direita == p){
+        p->pai->direita = p->esquerda;
+        p->esquerda->pai = p->pai;
+        free(p);
+        return 1;
+      }
+      else{
+        p->pai->esquerda = p->esquerda;
+        p->esquerda->pai = p->pai;
+        free(p);
+        return 1;
+      }
+    }
+    else if((p->direita != NULL) && (p->esquerda == NULL)){
+      if(p->pai->direita == p){
+        p->pai->direita = p->direita;
+        p->direita->pai = p->pai;
+        free(p);
+        return 1;
+      }
+      else{
+        p->pai->esquerda = p->direita;
+        p->direita->pai = p->pai;
+        free(p);
+        return 1;
+      }
+    }
+    else if((p->direita != NULL) && (p->esquerda != NULL)){
+      y = arvore_sucessor(T, n);
+      x = y->chave;
+      remove_x(T, x);
+      p->chave = x;
+      return 1;
+    }
+    
+  return 0;
+}
+
+
+
+//gera as informacoes para a "info"
+//gera os numeros de nos que a arvore possui
+int arvore_info_nos(node* p){
+  if(p == NULL){
+    return 0;
+  }
+  return arvore_info_nos(p->esquerda) + arvore_info_nos(p->direita) + 1;
+}
+//gera o numero de folhas que a arvore possui
+int arvore_info_folhas(node* p, int folhas){
+  if(p != NULL){
+    if((p->esquerda == NULL) && (p->direita == NULL)){
+      folhas++;
+    }
+    folhas = arvore_info_folhas(p->esquerda, folhas);
+    folhas = arvore_info_folhas(p->direita, folhas);
+    return folhas;
+    }
+    return folhas;
+}
+//gera a altura da arvore 
+int arvore_info_altura(node* p){
+  int h_esq, h_dir;
+  if(p == NULL){
+    return 0;
+  }
+  else{
+    h_esq = arvore_info_altura(p->esquerda);
+    h_dir = arvore_info_altura(p->direita);  
+   
+    if(h_dir > h_esq){
+      return h_dir + 1;
+    }
+    else{
+      return h_esq + 1;
+    }
+  }
+}
+
+
+
+//deixa um apontador para o ultimo no da arvore para que possa imprimir a linhagem da raiz ate o ultimo 
+void ultimo(node* p, tree* T, int altura){
+  if(p != NULL){
+    ultimo(p->esquerda, T, altura);
+    ultimo(p->direita, T, altura);
+    if(p->nivel == altura){
+      T->ultimo = p;
+    }
+  }
+  return;
+}
+//procura o caminho mais longo na arvore a partir da raiz
+void arvore_longo(tree* T){
+  node* p = T->raiz;
+  int altura = arvore_info_altura(p) - 1, i = 0;
+  ultimo(p, T, altura);
+  p = T->ultimo;
+
+  if(T->ultimo == NULL){
+    return;
+  }
+
+  printf("caminho mais longo e mais a direita: ");
+  int imprimir[altura + 1];
+  while(i <= altura){
+    imprimir[i] = p->chave;
+    p = p->pai;
+    i++;
+  }
+  i = altura;
+  while(i >= 0){
+    printf("%d ", imprimir[i]);
+    i--;
+  }
+  printf("\n");
+}
+
+
+
+//apos remover um numero, essa funcao organiza os indicadores dos niveis da arvore (p->nivel)
+void organizar(node* p){
+  if(p != NULL){
+    if(p->pai != NULL){
+      p->nivel = p->pai->nivel + 1;
+    }
+    organizar(p->esquerda);
+    organizar(p->direita);
+  }
+  
+}
+
+
+
+//verifica se a arvore 'e avl
+int avl(node * p){
+  int f = 1, x, y;
+  if(p != NULL){
+	  f = avl(p->esquerda);
+    if(f == 0){
+      return 0;
+    }
+	  f = avl(p->direita);
+	  if (f == 0) {
+	    return 0;
+	  }
+	
+	  x = arvore_info_altura(p->esquerda);
+	  y = arvore_info_altura(p->direita);
+	  if ((x - y != -1) && (x - y != 0) && (x - y != 1)) {
+	    return 0;
+	  }
+	  return 1;
+  }
+  return 1;
+}
+
+
+
+//funcao main
+int main(void){
+  tree* T = calloc(1, sizeof(tree));
+  node* p = T->raiz;
+  node* j = NULL;
+  node* l = NULL;
+  char comando[20];
+  int controlador = 0, n, i, x;
+  while(controlador == 0){
+    n = 0;
+    i = 0;
+    p = T->raiz;
+    j = NULL;
+    while(i < 20){
+      comando[i] = ' ';
+      i++;
+    }
+
+    int nos = 0, folhas = 0, altura = 0;
+
+    scanf("%s %d", comando, &n);
+
+    if(strcmp(comando, "criar") == 0){
+      arvore_free_nodes(p);
+      arvore_free(T);
+    }
+    else if(strcmp(comando, "inserir") == 0){
+      j = arvore_busca(T, n);
+      
+      if(j == NULL){
+        arvore_insert(T, n);      
+      }
+    }
+    else if(strcmp(comando, "remover") == 0){
+      remove_x(T, n);
+      if(T->raiz != NULL){
+        p = T->raiz;
+        p->nivel = 0;
+        organizar(p);
+      }
+      
+    }
+    else if(strcmp(comando, "buscar") == 0){
+      j = arvore_busca(T, n);
+      if(j == NULL){
+        printf("%d nao esta na arvore\n", n);
+      }
+      else
+      printf("%d esta na arvore\n", n);
+    }
+    else if(strcmp(comando, "pre-ordem") == 0){
+      p = T->raiz;
+      if(T->raiz != NULL){
+        printf("pre-ordem: ");
+        pre_ordem(p);
+      }
+      else 
+        printf("arvore vazia");
+      printf("\n"); 
+    }
+    else if(strcmp(comando, "em-ordem") == 0){
+      p = T->raiz;
+      if(T->raiz != NULL){
+        printf("em-ordem: ");
+        em_ordem(p);
+      }
+      else
+        printf("arvore vazia");
+      printf("\n");
+    }
+    else if(strcmp(comando, "pos-ordem") == 0){
+      p = T->raiz;
+      if(T->raiz != NULL){
+      printf("pos-ordem: ");
+      pos_ordem(p);
+      }
+      else
+        printf("arvore vazia");
+      printf("\n");
+    }
+    else if(strcmp(comando, "sucessor") == 0){
+      l = arvore_sucessor(T, n);
+      if(l == NULL){
+        printf("nao ha sucessor de %d\n", n);
+      }
+      else
+        printf("sucessor de %d: %d\n", n, l->chave);
+      
+    }
+    else if(strcmp(comando, "predecessor") == 0){
+      x = n;
+      l = arvore_predecessor(T, n);
+      if(l == NULL){
+        printf("nao ha predecessor de %d\n", x);
+      }
+      else{
+        printf("predecessor de %d: %d\n", n, l->chave);
+      }
+    }
+    else if(strcmp(comando, "info") == 0){
+      p = T->raiz;
+      if(p == NULL){
+        printf("nos: 0, folhas: 0, altura: 0\n");
+      }
+      else{
+        nos = arvore_info_nos(T->raiz);
+        folhas = arvore_info_folhas(p, 0);
+        altura = arvore_info_altura(p) - 1;
+        printf("nos: %d, folhas: %d, altura: %d\n", nos, folhas, altura);
+        nos = 0;
+        folhas = 0;
+        altura = 0;
+      }
+    }
+    else if(strcmp(comando, "caminho-mais-longo") == 0){
+      if(T->raiz == NULL){
+        printf("arvore vazia\n");
+      }
+      else{
+        arvore_longo(T);
+      }
+    }
+    else if(strcmp(comando, "avl?") == 0){
+      p = T->raiz;
+      if(p != NULL){
+        x = avl(p);
+        if(x == 1){
+          printf("sim\n");
+        }
+        else{
+          printf("nao\n");
+        }
+      }
+      else{
+        printf("sim\n");
+      }
+      x = 0;
+    }
+
+
+    else if(strcmp(comando, "terminar") == 0){
+      controlador = 1;
+      arvore_free_nodes(p);
+      arvore_free(T);
+      free(T);
+    }
+    comando[0] = '\0';
+    n = 0;
+  }
+
+  return 0;
+}
+

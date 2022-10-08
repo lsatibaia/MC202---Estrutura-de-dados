@@ -1,0 +1,388 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <errno.h>
+#include <string.h>
+
+struct node{
+  int chave;
+  struct node* esquerda;
+  struct node* direita;
+  struct node* pai;
+};
+
+typedef struct node node;
+
+struct tree{
+  struct node* raiz;
+};
+
+typedef struct tree tree;
+
+
+
+// funcao que insere um novo numero na arvore seguindo a regra do menor pra esquerda e maior para a direita
+int arvore_insert(tree* T, int data){
+  node* novo = calloc(1, sizeof(node));
+  
+  if(novo == NULL){
+    printf("memoria insuficiente\n");
+    return 0;
+  }
+
+  if(!novo)
+    return 0;
+
+  novo->chave = data;
+
+  if(T->raiz == NULL){
+    T->raiz = novo;
+    return 1;
+  }
+
+  node* p = T->raiz;
+  node* pp = NULL;
+
+  while(p != NULL){
+    pp = p;
+    if(p->chave > data)
+      p = p->esquerda;
+    else
+      p = p->direita;
+  }
+  
+  if(pp->chave > data){
+    pp->esquerda = novo;
+    pp->esquerda->pai = pp; 
+  }
+  else{
+    pp->direita = novo;
+    pp->direita->pai = pp;
+  }
+
+  p = T->raiz;
+  T->raiz = p;
+
+    
+  return 1;
+}
+
+
+
+// funcao de busca: caso tenha o numero pesquisado na arvore, a funcao retorna 1, caso nao tenha retorna 0
+node* arvore_busca(tree* T, int nbusca){
+  if(T->raiz == NULL){
+    return NULL;
+  }
+
+  node* p = T->raiz;
+  while(p != NULL){
+    if(p->chave == nbusca)
+      return p;
+    else if(p->chave > nbusca){
+      p = p->esquerda;
+    }
+    else if (p->chave < nbusca){
+      p = p->direita;
+    }
+  }
+  return p;
+}
+
+
+
+// limpa a arvore 
+void arvore_free_nodes(node* p){
+  if(p == NULL)
+    return;
+
+  arvore_free_nodes(p->esquerda);
+  arvore_free_nodes(p->direita);
+  free(p);
+
+  return;
+}
+void arvore_free(tree* T){
+  T->raiz = NULL;
+  T = NULL;
+}
+
+
+
+//pre-ordem
+void pre_ordem(node* p){  
+  if(p != NULL){
+    printf("%d ", p->chave);
+    pre_ordem(p->esquerda);
+    pre_ordem(p->direita);
+  }
+}
+
+
+
+//em-ordem
+void em_ordem(node*p){
+  if(p != NULL){
+    em_ordem(p->esquerda);
+    printf("%d ", p->chave);
+    em_ordem(p->direita);
+  }
+}
+
+
+
+//pos-ordem
+void pos_ordem(node*p){
+  if(p != NULL){
+    pos_ordem(p->esquerda);
+    pos_ordem(p->direita);
+    printf("%d ", p->chave);
+  }
+}
+
+
+
+// funcao que devolve o sucessor de um numero inserido
+node* arvore_sucessor(tree* T, int n){  
+  node* u = T->raiz;
+  node* uu = NULL;
+  u = arvore_busca(T, n);
+  if(u == NULL)
+    return NULL;
+
+  if(u->direita != NULL){
+    u = u->direita;
+    while(u->esquerda != NULL){
+      u = u->esquerda;      
+    }  
+    return u;
+  }
+
+  uu = u->pai;
+  while((uu != NULL) && (u == uu->direita)){
+    u = uu;
+    uu = uu->pai;
+  }
+  
+  return uu;
+}
+
+
+
+// funcao que devolve o predecessor de um numero inserido
+node* arvore_predecessor(tree* T, int n){
+  node* u = T->raiz;
+  node* uu = NULL;
+  u = arvore_busca(T, n);
+  if(u == NULL)
+    return NULL;
+
+  
+  if(u->esquerda != NULL){
+    u = u->esquerda;
+    while(u->direita != NULL){
+      u = u->direita;
+    }
+    return u;
+  }
+  
+  uu = u->pai;
+  while((uu != NULL) && (u == uu->esquerda)){
+    u = uu;
+    uu = uu->pai;
+  }  
+  return uu;
+}
+
+
+
+// remove um certo numero inserido da arvore em questao
+int remove_x(tree* T, int n){
+  node* p = T->raiz;
+  p = arvore_busca(T, n);
+  if(p == NULL){
+    return 0;
+  }
+  node* y = NULL;
+  int x = 0;
+
+  if(p->chave == T->raiz->chave){
+    if((p->direita == NULL) && (p->esquerda == NULL)){
+      T->raiz = NULL;
+      return 1;
+    }
+    else if((p->direita == NULL) && (p->esquerda != NULL)){
+      T->raiz = p->esquerda;
+      T->raiz->pai = NULL;
+      free(p);
+      return 1;
+    }
+    else if((p->direita != NULL) && (p->esquerda == NULL)){
+      T->raiz = p->direita;
+      T->raiz->pai = NULL;
+      free(p);
+      return 1;
+    }
+    else if((p->direita != NULL) && (p->esquerda != NULL)){
+      y = arvore_sucessor(T, n);
+      x = y->chave;
+      remove_x(T, x);
+      T->raiz->chave = x;
+      return 1;
+      
+    }
+  }
+  else
+    if((p->direita == NULL) && (p->esquerda == NULL)){
+      if(p->pai->direita == p){
+        p->pai->direita = NULL;
+        free(p);
+      }
+      else{
+        p->pai->esquerda = NULL;
+        free(p);
+      }
+      return 1;
+    }
+    else if((p->direita == NULL) && (p->esquerda != NULL)){
+      if(p->pai->direita == p){
+        p->pai->direita = p->esquerda;
+        p->esquerda->pai = p->pai;
+        free(p);
+        return 1;
+      }
+      else{
+        p->pai->esquerda = p->esquerda;
+        p->esquerda->pai = p->pai;
+        free(p);
+        return 1;
+      }
+    }
+    else if((p->direita != NULL) && (p->esquerda == NULL)){
+      if(p->pai->direita == p){
+        p->pai->direita = p->direita;
+        p->direita->pai = p->pai;
+        free(p);
+        return 1;
+      }
+      else{
+        p->pai->esquerda = p->direita;
+        p->direita->pai = p->pai;
+        free(p);
+        return 1;
+      }
+    }
+    else if((p->direita != NULL) && (p->esquerda != NULL)){
+      y = arvore_sucessor(T, n);
+      x = y->chave;
+      remove_x(T, x);
+      p->chave = x;
+      return 1;
+    }
+    
+  return 0;
+}
+
+
+
+
+int main(void){
+  tree* T = calloc(1, sizeof(tree));
+  node* p = T->raiz;
+  node* j = NULL;
+  node* l = NULL;
+  char comando[15];
+  int controlador = 0, n, i;
+  while(controlador == 0){
+    n = 0;
+    i = 0;
+    p = T->raiz;
+    j = NULL;
+    while(i < 15){
+      comando[i] = ' ';
+      i++;
+    }
+
+    scanf("%s %d", comando, &n);
+
+    if(strcmp(comando, "criar") == 0){
+      arvore_free_nodes(p);
+      arvore_free(T);
+    }
+    else if(strcmp(comando, "inserir") == 0){
+      j = arvore_busca(T, n);
+      
+      if(j == NULL){
+        arvore_insert(T, n);      
+      }
+    }
+    else if(strcmp(comando, "remover") == 0){
+      remove_x(T, n);
+    }
+    else if(strcmp(comando, "buscar") == 0){
+      j = arvore_busca(T, n);
+      if(j == NULL){
+        printf("%d nao esta na arvore\n", n);
+      }
+      else
+      printf("%d esta na arvore\n", n);
+    }
+    else if(strcmp(comando, "pre-ordem") == 0){
+      p = T->raiz;
+      if(T->raiz != NULL){
+        printf("pre-ordem: ");
+        pre_ordem(p);
+      }
+      else 
+        printf("arvore vazia");
+      printf("\n"); 
+    }
+    else if(strcmp(comando, "em-ordem") == 0){
+      p = T->raiz;
+      if(T->raiz != NULL){
+        printf("em-ordem: ");
+        em_ordem(p);
+      }
+      else
+        printf("arvore vazia");
+      printf("\n");
+    }
+    else if(strcmp(comando, "pos-ordem") == 0){
+      p = T->raiz;
+      if(T->raiz != NULL){
+      printf("pos-ordem: ");
+      pos_ordem(p);
+      }
+      else
+        printf("arvore vazia");
+      printf("\n");
+    }
+    else if(strcmp(comando, "sucessor") == 0){
+      l = arvore_sucessor(T, n);
+      if(l == NULL){
+        printf("nao ha sucessor de %d\n", n);
+      }
+      else
+        printf("sucessor de %d: %d\n", n, l->chave);
+      
+    }
+    else if(strcmp(comando, "predecessor") == 0){
+      l = arvore_predecessor(T, n);
+      if(l == NULL){
+        printf("nao ha predecessor de %d\n", n);
+      }
+      else{
+        printf("predecessor de %d: %d\n", n, l->chave);
+      }
+    }
+    else if(strcmp(comando, "terminar") == 0){
+      controlador = 1;
+      arvore_free_nodes(p);
+      arvore_free(T);
+      free(T);
+    }
+    comando[0] = '\0';
+    n = 0;
+  }
+
+  return 0;
+}

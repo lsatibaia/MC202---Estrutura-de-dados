@@ -1,0 +1,224 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <errno.h>
+#include <string.h>
+
+struct hp{
+  int custo;
+  int indice;
+};
+typedef struct hp hp;
+
+struct heap{
+  hp* H;
+  int *I;
+  int size;
+};
+
+typedef struct heap heap;
+
+//inicializa o vetor heap e o vetor indice colocando -1 em todas as posicoes dentro do limite de tamanho inserido na entrada
+void inicializar(heap* h, int n){
+  h->H = malloc(n* sizeof(hp));
+  h->I = malloc(n* sizeof(heap));
+  
+  
+
+  int i = 0;
+  h->size = 0;
+  while(i < n){
+    h->H[i].indice = -1;
+    h->H[i].custo = 0;
+    h->I[i] = -1;
+    i++;
+  }
+}
+
+
+//insere os dois numeros no final do heap e vai comparando o indice ate que o indice de i seja menor que o de i/2
+int inserir(heap* h, int a, int b, int n){
+  if(h->I[a] != -1){
+    return 0;
+  }
+
+  int i = h->size;
+  h->H[i].indice = a;
+  h->H[i].custo = b;
+  h->I[a] = i;
+
+  while(i > 0){
+    if((h->H[i].custo < h->H[(i-1)/2].custo)){
+      h->I[h->H[i].indice] = (i-1)/2;
+      h->I[h->H[(i-1)/2].indice] = i;
+
+      a = h->H[i].indice;
+      b = h->H[i].custo;
+      h->H[i].indice = h->H[(i-1)/2].indice;
+      h->H[i].custo = h->H[(i-1)/2].custo;
+      h->H[(i-1)/2].indice = a;
+      h->H[(i-1)/2].custo = b;
+    }
+    
+    i = (i-1)/2;
+  }
+
+  h->size = h->size + 1;
+  
+  /**
+  i = 0;
+  while(i < n){
+    if(h->H[i] == -1){
+      h->I[h->H[i]] = -1;
+      h->C[i] = 0;
+    }
+    i++;
+  }
+  **/
+  
+  return 1;
+}
+
+
+//arrumar apos mudar o valor de custo de um indice
+int arrumar(heap* h, int a, int b, int n){
+  if(h->I[a] == -1){
+    return 0;
+  }
+
+  int i = h->I[a];
+  h->H[h->I[a]].custo = b;
+
+
+  while(i > 0){
+    if((h->H[i].custo < h->H[(i-1)/2].custo)){
+      h->I[h->H[i].indice] = (i-1)/2;
+      h->I[h->H[(i-1)/2].indice] = i;
+      a = h->H[i].indice;
+      b = h->H[i].custo;
+      h->H[i].indice = h->H[(i-1)/2].indice;
+      h->H[i].custo = h->H[(i-1)/2].custo;
+      h->H[(i-1)/2].indice = a;
+      h->H[(i-1)/2].custo = b;
+    }
+   
+    i = (i-1)/2;
+  }
+  
+  return 1;
+}
+
+
+//remove o valor minimo do heap e corrigi os valores que ainda ficaram
+int remover_minimo(heap* h, int n){
+  printf("minimo {%d,%d}\n", h->H[0].indice, h->H[0].custo);
+  if(h->size == 1){
+    h->I[h->H[0].indice] = -1;
+    h->H[0].indice = -1;
+    h->H[0].custo = 0;
+    h->size = 0;
+    return 1;
+  }
+  int i = 0, a = 0, b = 0;
+  a = h->H[0].indice;
+  
+  h->I[h->H[0].indice] = h->I[h->H[h->size - 1].indice];
+  h->H[0].indice = h->H[h->size - 1].indice;
+  h->H[0].custo = h->H[h->size - 1].custo;
+  
+  h->I[a] = -1;
+  h->H[h->size - 1].indice = -1;
+  h->H[h->size - 1].custo = 0;
+  
+  h->size = h->size - 1;
+
+  //ja colocou o ultimo no lugar do minimo, agora tem que ir descendo ate achar um numero que seja maior que ele
+  int esquerda, direita, menor;
+  esquerda = (2*i) + 1;
+  direita = esquerda + 1;
+  menor = 0;
+
+  if(direita < h->size){
+    if(h->H[direita].custo > h->H[esquerda].custo){
+      menor = esquerda;
+    }
+    else{
+      menor = direita;
+    }
+  }
+  else if(esquerda < h->size){
+    menor = esquerda;
+  }
+
+  while((menor < h->size) && (h->H[i].custo > h->H[menor].custo)){
+    a = h->H[i].indice;
+    b = h->H[i].custo;
+    h->I[h->H[i].indice] = menor;
+    h->I[h->H[menor].indice] = i;
+    h->H[i].indice = h->H[menor].indice;
+    h->H[i].custo = h->H[menor].custo;
+    h->H[menor].indice = a;
+    h->H[menor].custo = b;
+  
+    i = menor;
+    esquerda = (2*i) + 1;
+    direita = esquerda + 1;
+
+    if(direita < h->size){
+      if(h->H[direita].custo > h->H[esquerda].custo){
+        menor = esquerda;
+      }
+      else{
+        menor = direita;
+      }
+    }
+    else if(esquerda < h->size){
+      menor = esquerda;
+    }
+  }
+
+
+  return 1;
+}
+
+
+//funcao main
+int main(){
+  int n;
+  scanf("%d ", &n);
+
+  heap * h;
+  h = calloc(1, sizeof(int));
+  inicializar(h, n);
+
+  char comando[2];
+  int t = 0, a = 0, b = 0;
+  while(t == 0){
+    scanf("%c%*c", &comando[0]);
+
+
+    if(comando[0] == 'i'){
+      scanf("%d %d ", &a , &b);
+      inserir(h, a, b, n);
+    }
+
+    else if(comando[0] == 'm'){
+      if(h->size == 0){
+        printf("heap vazio\n");
+      }
+      else{
+        remover_minimo(h, n);
+      }
+    }
+
+    else if(comando[0] == 'd'){
+      scanf("%d %d ", &a, &b);
+      arrumar(h, a, b, n);
+    }
+
+    else if(comando[0] == 't'){
+      t = 1;
+    }
+  }
+}
+
+

@@ -1,0 +1,51 @@
+#include <stdio.h>
+
+int main(void) 
+{
+  int t, d, h, m, s;
+  scanf("%d", &t);
+  
+  if(t/86400 < 1)
+  {
+  d = 0;
+  }
+  if(t/86400 > 0)
+  {
+  d = t/86400;
+  t = t%86400;
+  }
+
+  if(t/3600 < 1)
+  {
+  h = 0;
+  }
+  if(t/3600 > 0)
+  {
+  h = t/3600;
+  t = t%3600;
+  }
+
+  if(t/60 < 1)
+  {
+  m = 0;
+  }
+  if(t/60 > 0)
+  {
+  m = t/60;
+  t = t%60;
+  }
+
+  if(t/1 < 1)
+  {
+  s = 0;
+  }
+  if(t/1 > 0)
+  {
+  s = t/1;
+  t = t%1;
+  }
+
+
+  printf("%d dia(s), %d hora(s), %d minuto(s) e %d segundo(s).\n", d, h, m, s);
+  return 0;
+}
